@@ -1,0 +1,27 @@
+version: '3'
+networks:
+  main:
+    driver: bridge
+services:
+  app:
+    build: ./app
+    image: app
+    environment:
+      - AWS_XRAY_DEBUG_MODE=TRUE
+      - AWS_XRAY_CONTEXT_MISSING=LOG_ERROR
+      - AWS_XRAY_DAEMON_ADDRESS=xray-daemon:2000
+    ports:
+      - "8080:8080"
+    networks:
+      - main
+  xray-daemon:
+    build: ./xray-daemon
+    image: xray-daemon
+    command: "--bind=0.0.0.0:2000 --region=us-east-2 -o"
+    environment:
+      - AWS_ACCESS_KEY_ID=YOURS_GOES_HERE
+      - AWS_SECRET_ACCESS_KEY=YOURS_GOES_HERE
+    ports:
+      - "2000:2000/udp"
+    networks:
+      - main
